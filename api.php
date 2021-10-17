@@ -47,3 +47,15 @@ $app->get('/plugins/ipRegistration/update', function ($request, $response, $args
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
+$app->get('/plugins/ipRegistration/list', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->checkRoute($request)) {
+		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['ipRegistration-pluginAuth'], true)) {
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginListIPs();
+		}
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});

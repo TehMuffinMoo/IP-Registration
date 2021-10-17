@@ -23,11 +23,11 @@ class ipRegistrationPlugin extends Organizr
 	{
 		return array(
 			'Plugin Settings' => array(
-				$this->settingsOption('auth', 'ipRegistration-pluginAuth'),
-				$this->settingsOption('input', 'ipRegistration-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
-                $this->settingsOption('input', 'ipRegistration-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
-                $this->settingsOption('input', 'ipRegistration-PfSense-Username', ['label' => 'The username of your pfsense account']),
-                $this->settingsOption('passwordalt', 'ipRegistration-PfSense-Password', ['label' => 'The password of your pfsense account']),
+				$this->settingsOption('auth', 'IPREGISTRATION-pluginAuth'),
+				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
+                $this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
+                $this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
+                $this->settingsOption('passwordalt', 'IPREGISTRATION-PfSense-Password', ['label' => 'The password of your pfsense account']),
 
 			),
 		);
@@ -46,7 +46,7 @@ class ipRegistrationPlugin extends Organizr
 
 	public function _ipRegistrationPluginipRegistration()
 	{
-        $dir = "/var/www/portal.tmmn.uk/api/plugins/ipRegistration";
+        $dir = __DIR__;
         $UserIP = $this->userIP();
         $Result = array (
             "Request" => $_SERVER['HTTP_X_FORWARDED_FOR'],
@@ -59,36 +59,28 @@ class ipRegistrationPlugin extends Organizr
             )
         );
         if (filter_var($UserIP, FILTER_VALIDATE_IP)) {
-            if (filter_var($UserIP, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            if (filter_var($UserIP, FILTER_VALIDATE_IP)) {
 
-                $IPs = file("$dir/IP.txt");
+                $IPs = file("$dir/IP.log");
                 $IPsfound = false;
                 foreach($IPs as $IPsLine)
                 {
                   if(strpos($IPsLine, $UserIP) !== false) {
-                    $IPslineData = explode(' # ', $IPsLine);
-                    if ($IPslineData[0] == $UserIP) {
+                    $IPslineData = explode(',', $IPsLine);
+                    if ($IPslineData[2] == $UserIP) {
                         $exists = TRUE;
                       }
                   }
                 }
             
                 if ($exists == TRUE) {
-                    // Write to log file
-                    $log = fopen("$dir/IP.log", "a");
-                    $logdate = date("j F Y @ g:ia");
-                    $logstring = $logdate . ",Auto," . $UserIP . "," . $this->user['username'] . ",Exists" . PHP_EOL;
-                    fwrite($log, $logstring);
-                    fclose($log);
-            
                     $this->setResponse(200, 'IP Address already registered in the database: '.$UserIP);
                     $Result['Response']['Status'] = "Exists";
                     $Result['Response']['Location'] = "External";
-                    $Result['Response']['Message'] = 'IP Address is already registered in the database: '.$UserIP;
-            
-                }
-                else if ($exists == FALSE) {
-                    $file = "$dir/IP.txt";
+                    $Result['Response']['Message'] = 'IP is already registered.';
+                    return $Result;
+                } else {
+                    $file = "$dir/IP.log";
                     $f = fopen($file, 'r');
                     $line = fgets($f);
                     fclose($f);
@@ -96,47 +88,35 @@ class ipRegistrationPlugin extends Organizr
                     $first_line = array_shift($contents);
                     file_put_contents($file, implode("\r\n", $contents));
             
-                    $this->setResponse(200, 'Adding IP Address to database: '.$UserIP);
-                    $Result['Response']['Status'] = "Adding";
-                    $Result['Response']['Location'] = "External";
-                    $Result['Response']['Message'] = 'Adding IP Address to database: '.$UserIP;
-            
-                    // Add new IP Address
-                    $file = fopen("$dir/IP.txt", "a");
-                    $date = date("j F Y g:ia");
-                    $string = PHP_EOL . $UserIP . " # Auto # Added on " . $date . " by " . $this->user['username'] . PHP_EOL;
-                    fwrite($file, $string);
-                    fclose($file);
-            
                     // Write to log file
                     $log = fopen("$dir/IP.log", "a");
                     $logdate = date("j F Y @ g:ia");
-                    $logstring = $logdate . ",Auto," . $UserIP . "," . $this->user['username'] . ",New" . PHP_EOL;
+                    $logstring = PHP_EOL . $logdate . ",Auto," . $UserIP . "," . $this->user['username'] . ",New" . PHP_EOL;
                     fwrite($log, $logstring);
                     fclose($log);
                     
                     // Check to make sure it was entered OK
                     $exists = FALSE;
-                    $IPs = file("$dir/IP.txt");
+                    $IPs = file("$dir/IP.log");
                     foreach($IPs as $IPsLine) {
                         if(strpos($IPsLine, $UserIP) !== false) {
-                            $IPslineData = explode(' # ', $IPsLine);
-                            if ($IPslineData[0] == $UserIP) {
+                            $IPslineData = explode(',', $IPsLine);
+                            if ($IPslineData[2] == $UserIP) {
                                 $this->setResponse(200, 'Added IP Address to the database successfully: '.$UserIP);
                                 $Result['Response']['Status'] = "Added";
                                 $Result['Response']['Location'] = "External";
-                                $Result['Response']['Message'] = 'Added IP Address to the database successfully: '.$UserIP;
-                                $this->_ipRegistrationPluginUpdateFirewall();
+                                $Result['Response']['Message'] = 'IP Address Registered Successfully.';
+                                //$this->_ipRegistrationPluginUpdateFirewall();
                                 return $Result;
                             }
                         }
                     }
-                    if ($Result->response->Added != true) {
+                    if ($Result['Response']['Status'] != true) {
                         $this->setResponse(409, 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP);
                         $this->writeLog('error', 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP, $this->user['username']);
                         $Result['Response']['Status'] = "Error";
                         $Result['Response']['Location'] = "External";
-                        $Result['Response']['Message'] = 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP;
+                        $Result['Response']['Message'] = 'Failed to add IP Address to database.';
                         return $Result;
                     }
                 }
@@ -154,28 +134,36 @@ class ipRegistrationPlugin extends Organizr
         }
 	}
 
-    public function _ipRegistrationPluginUpdateFirewall() {
+    public function _ipRegistrationPluginListIPs() {
+        $dir = __DIR__;
+        $IPFile = file("$dir/IP.log");
+        $IPs = [];
+        foreach(array_reverse($IPFile) as $IPsLine)
+        {
+            $IPData = explode(",",$IPsLine);
+            $IPs[] = $IPData[2];
+        }
+        return $IPs;
+    }
 
+    public function _ipRegistrationPluginUpdateFirewall() {
         require 'vendor/autoload.php';
-        $ssh = new phpseclib\Net\SSH2($this->config['ipRegistration-PfSense-IP']);
-        if (!$ssh->login($this->config['ipRegistration-PfSense-Username'], $this->decrypt($this->config['ipRegistration-PfSense-Password']))) {
+        $ssh = new phpseclib\Net\SSH2($this->config['IPREGISTRATION-PfSense-IP']);
+        if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
             $this->setResponse(409, "IP Registration Plugin : SSH Login Failed.");
-            $this->writeLog('error', 'IP Registration Plugin : SSH Login Failed for'.$this->config['ipRegistration-PfSense-Username'], $this->user['username']);
+            $this->writeLog('error', 'IP Registration Plugin : SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username'], $this->user['username']);
             return $false;
         } else {
-            $result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['ipRegistration-PfSense-IPTable']);
-                if (!$result) {
-                    $this->setResponse(200, 'IP Registration Plugin : '.$this->config['ipRegistration-PfSense-IPTable'].' refreshed successfully.');
-                    $this->writeLog('success', 'IP Registration Plugin : '.$this->config['ipRegistration-PfSense-IPTable'].' refreshed successfully.', $this->user['username']);
-                    return $true;
-                } else {
-                    $this->setResponse(409, 'IP Registration Plugin : Failed to refresh '.$this->config['ipRegistration-PfSense-IPTable']);
-                    $this->writeLog('error', 'IP Registration Plugin : Failed to refresh '.$this->config['ipRegistration-PfSense-IPTable'].' : '.$result, $this->user['username']);
-                    return $result;
-                }
-
+            $result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['IPREGISTRATION-PfSense-IPTable']);
+            if (!$result) {
+                $this->setResponse(200, 'IP Registration Plugin : '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.');
+                $this->writeLog('success', 'IP Registration Plugin : '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.', $this->user['username']);
+                return $true;
+            } else {
+                $this->setResponse(409, 'IP Registration Plugin : Failed to refresh '.$this->config['IPREGISTRATION-PfSense-IPTable']);
+                $this->writeLog('error', 'IP Registration Plugin : Failed to refresh '.$this->config['IPREGISTRATION-PfSense-IPTable'].' : '.$result, $this->user['username']);
+                return $result;
+            }
         }
-
     }
-    
 }

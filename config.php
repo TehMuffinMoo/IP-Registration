@@ -4,10 +4,10 @@
  * Along with all your other settings from plugin.php
  */
 return array(
-	'REGISTERIP-enabled' => false,
-	'REGISTERIP-PfSense-IP' => '',
-	'REGISTERIP-PfSense-IPTable' => '',
-	'REGISTERIP-PfSense-Username' => '',
-	'REGISTERIP-PfSense-Password' => '',
-	'REGISTERIP-pluginAuth' => '1'
+	'IPREGISTRATION-enabled' => false,
+	'IPREGISTRATION-PfSense-IP' => '',
+	'IPREGISTRATION-PfSense-IPTable' => '',
+	'IPREGISTRATION-PfSense-Username' => '',
+	'IPREGISTRATION-PfSense-Password' => '',
+	'IPREGISTRATION-pluginAuth' => '1'
 );
