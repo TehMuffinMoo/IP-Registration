@@ -1,7 +1,7 @@
 <?php
 $app->get('/plugins/ipRegistration/settings', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
-	if ($ipRegistrationPlugin->checkRoute($request)) {
+	if ($ipRegistrationPlugin->_ipRegistrationPluginCheckRequest($request) && $ipRegistrationPlugin->checkRoute($request)) {
 		if ($ipRegistrationPlugin->qualifyRequest(1, true)) {
 			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginGetSettings();
 		}
@@ -27,7 +27,7 @@ $app->get('/plugins/ipRegistration/register', function ($request, $response, $ar
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	if ($ipRegistrationPlugin->checkRoute($request)) {
 		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['ipRegistration-pluginAuth'], true)) {
-			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginipRegistration();
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginIPRegistration();
 		}
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
