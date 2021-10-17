@@ -1,6 +1,6 @@
 <?php
-$GLOBALS['organizrPages'][] = 'plugin_registerIP';
-function get_page_registerIP($Organizr)
+$GLOBALS['organizrPages'][] = 'plugin_ipRegistration';
+function get_page_ipRegistration($Organizr)
 {
     if (!$Organizr) {
         $Organizr = new Organizr();

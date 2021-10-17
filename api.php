@@ -1,9 +1,9 @@
 <?php
-$app->get('/plugins/registerip/settings', function ($request, $response, $args) {
-	$registerIPPlugin = new registerIPPlugin();
-	if ($registerIPPlugin->checkRoute($request)) {
-		if ($registerIPPlugin->qualifyRequest(1, true)) {
-			$GLOBALS['api']['response']['data'] = $registerIPPlugin->_registerIPPluginGetSettings();
+$app->get('/plugins/ipRegistration/settings', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->checkRoute($request)) {
+		if ($ipRegistrationPlugin->qualifyRequest(1, true)) {
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginGetSettings();
 		}
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -11,11 +11,11 @@ $app->get('/plugins/registerip/settings', function ($request, $response, $args) 
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
-$app->get('/plugins/registerip/launch', function ($request, $response, $args) {
-	$registerIPPlugin = new registerIPPlugin();
-	if ($registerIPPlugin->checkRoute($request)) {
-		if ($registerIPPlugin->qualifyRequest($registerIPPlugin->config['REGISTERIP-pluginAuth'], true)) {
-			$registerIPPlugin->_registerIPPluginLaunch();
+$app->get('/plugins/ipRegistration/launch', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->checkRoute($request)) {
+		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['ipRegistration-pluginAuth'], true)) {
+			$ipRegistrationPlugin->_ipRegistrationPluginLaunch();
 		}
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -23,11 +23,11 @@ $app->get('/plugins/registerip/launch', function ($request, $response, $args) {
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
-$app->get('/plugins/registerip/register', function ($request, $response, $args) {
-	$registerIPPlugin = new registerIPPlugin();
-	if ($registerIPPlugin->checkRoute($request)) {
-		if ($registerIPPlugin->qualifyRequest($registerIPPlugin->config['REGISTERIP-pluginAuth'], true)) {
-			$GLOBALS['api']['response']['data'] = $registerIPPlugin->_registerIPPluginRegisterIP();
+$app->get('/plugins/ipRegistration/register', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->checkRoute($request)) {
+		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['ipRegistration-pluginAuth'], true)) {
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginipRegistration();
 		}
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));
@@ -35,11 +35,11 @@ $app->get('/plugins/registerip/register', function ($request, $response, $args) 
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
-$app->get('/plugins/registerip/update', function ($request, $response, $args) {
-	$registerIPPlugin = new registerIPPlugin();
-	if ($registerIPPlugin->checkRoute($request)) {
-		if ($registerIPPlugin->qualifyRequest($registerIPPlugin->config['REGISTERIP-pluginAuth'], true)) {
-			$GLOBALS['api']['response']['data'] = $registerIPPlugin->_registerIPPluginUpdateFirewall();
+$app->get('/plugins/ipRegistration/update', function ($request, $response, $args) {
+	$ipRegistrationPlugin = new ipRegistrationPlugin();
+	if ($ipRegistrationPlugin->checkRoute($request)) {
+		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['ipRegistration-pluginAuth'], true)) {
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginUpdateFirewall();
 		}
 	}
 	$response->getBody()->write(jsonE($GLOBALS['api']));

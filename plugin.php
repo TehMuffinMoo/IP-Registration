@@ -1,39 +1,39 @@
 <?php
 // PLUGIN INFORMATION
-$GLOBALS['plugins']['registerip'] = array( // Plugin Name
-	'name' => 'Register IP', // Plugin Name
+$GLOBALS['plugins']['ipRegistration'] = array( // Plugin Name
+	'name' => 'IP Registration', // Plugin Name
 	'author' => 'TehMuffinMoo', // Who wrote the plugin
 	'category' => 'Access Management', // One to Two Word Description
 	'link' => '', // Link to plugin info
 	'license' => 'personal', // License Type use , for multiple
-	'idPrefix' => 'REGISTERIP', // html element id prefix (All Uppercase)
-	'configPrefix' => 'REGISTERIP', // config file prefix for array items without the hypen (All Uppercase)
+	'idPrefix' => 'ipRegistration', // html element id prefix (All Uppercase)
+	'configPrefix' => 'ipRegistration', // config file prefix for array items without the hypen (All Uppercase)
 	'version' => '1.0.1', // SemVer of plugin
-	'image' => 'api/plugins/registerIP/logo.png', // 1:1 non transparent image for plugin
+	'image' => 'api/plugins/ipRegistration/logo.png', // 1:1 non transparent image for plugin
 	'settings' => true, // does plugin need a settings modal?
 	'bind' => true, // use default bind to make settings page - true or false
-	'api' => 'api/v2/plugins/registerip/settings', // api route for settings page (All Lowercase)
+	'api' => 'api/v2/plugins/ipRegistration/settings', // api route for settings page (All Lowercase)
 	'homepage' => false // Is plugin for use on homepage? true or false
 );
 
-class registerIPPlugin extends Organizr
+class ipRegistrationPlugin extends Organizr
 {
 
-    public function _registerIPPluginGetSettings()
+    public function _ipRegistrationPluginGetSettings()
 	{
 		return array(
 			'Plugin Settings' => array(
-				$this->settingsOption('auth', 'REGISTERIP-pluginAuth'),
-				$this->settingsOption('input', 'REGISTERIP-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
-                $this->settingsOption('input', 'REGISTERIP-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
-                $this->settingsOption('input', 'REGISTERIP-PfSense-Username', ['label' => 'The username of your pfsense account']),
-                $this->settingsOption('passwordalt', 'REGISTERIP-PfSense-Password', ['label' => 'The password of your pfsense account']),
+				$this->settingsOption('auth', 'ipRegistration-pluginAuth'),
+				$this->settingsOption('input', 'ipRegistration-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
+                $this->settingsOption('input', 'ipRegistration-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
+                $this->settingsOption('input', 'ipRegistration-PfSense-Username', ['label' => 'The username of your pfsense account']),
+                $this->settingsOption('passwordalt', 'ipRegistration-PfSense-Password', ['label' => 'The password of your pfsense account']),
 
 			),
 		);
 	}
 
-	public function _registerIPPluginLaunch()
+	public function _ipRegistrationPluginLaunch()
 	{
 		$user = $this->getUserById($this->user['userID']);
 		if ($user) {
@@ -44,9 +44,9 @@ class registerIPPlugin extends Organizr
 		return false;
 	}
 
-	public function _registerIPPluginRegisterIP()
+	public function _ipRegistrationPluginipRegistration()
 	{
-        $dir = "/var/www/portal.tmmn.uk/api/plugins/registerIP";
+        $dir = "/var/www/portal.tmmn.uk/api/plugins/ipRegistration";
         $UserIP = $this->userIP();
         $Result = array (
             "Request" => $_SERVER['HTTP_X_FORWARDED_FOR'],
@@ -126,17 +126,17 @@ class registerIPPlugin extends Organizr
                                 $Result['Response']['Status'] = "Added";
                                 $Result['Response']['Location'] = "External";
                                 $Result['Response']['Message'] = 'Added IP Address to the database successfully: '.$UserIP;
-                                $this->_registerIPPluginUpdateFirewall();
+                                $this->_ipRegistrationPluginUpdateFirewall();
                                 return $Result;
                             }
                         }
                     }
                     if ($Result->response->Added != true) {
-                        $this->setResponse(409, 'Register IP Plugin : Failed to add IP Address to database: '.$UserIP);
-                        $this->writeLog('error', 'Register IP Plugin : Failed to add IP Address to database: '.$UserIP, $this->user['username']);
+                        $this->setResponse(409, 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP);
+                        $this->writeLog('error', 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP, $this->user['username']);
                         $Result['Response']['Status'] = "Error";
                         $Result['Response']['Location'] = "External";
-                        $Result['Response']['Message'] = 'Register IP Plugin : Failed to add IP Address to database: '.$UserIP;
+                        $Result['Response']['Message'] = 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP;
                         return $Result;
                     }
                 }
@@ -154,23 +154,23 @@ class registerIPPlugin extends Organizr
         }
 	}
 
-    public function _registerIPPluginUpdateFirewall() {
+    public function _ipRegistrationPluginUpdateFirewall() {
 
         require 'vendor/autoload.php';
-        $ssh = new phpseclib\Net\SSH2($this->config['REGISTERIP-PfSense-IP']);
-        if (!$ssh->login($this->config['REGISTERIP-PfSense-Username'], $this->decrypt($this->config['REGISTERIP-PfSense-Password']))) {
-            $this->setResponse(409, "Register IP Plugin : SSH Login Failed.");
-            $this->writeLog('error', 'Register IP Plugin : SSH Login Failed for'.$this->config['REGISTERIP-PfSense-Username'], $this->user['username']);
+        $ssh = new phpseclib\Net\SSH2($this->config['ipRegistration-PfSense-IP']);
+        if (!$ssh->login($this->config['ipRegistration-PfSense-Username'], $this->decrypt($this->config['ipRegistration-PfSense-Password']))) {
+            $this->setResponse(409, "IP Registration Plugin : SSH Login Failed.");
+            $this->writeLog('error', 'IP Registration Plugin : SSH Login Failed for'.$this->config['ipRegistration-PfSense-Username'], $this->user['username']);
             return $false;
         } else {
-            $result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['REGISTERIP-PfSense-IPTable']);
+            $result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['ipRegistration-PfSense-IPTable']);
                 if (!$result) {
-                    $this->setResponse(200, 'Register IP Plugin : '.$this->config['REGISTERIP-PfSense-IPTable'].' refreshed successfully.');
-                    $this->writeLog('success', 'Register IP Plugin : '.$this->config['REGISTERIP-PfSense-IPTable'].' refreshed successfully.', $this->user['username']);
+                    $this->setResponse(200, 'IP Registration Plugin : '.$this->config['ipRegistration-PfSense-IPTable'].' refreshed successfully.');
+                    $this->writeLog('success', 'IP Registration Plugin : '.$this->config['ipRegistration-PfSense-IPTable'].' refreshed successfully.', $this->user['username']);
                     return $true;
                 } else {
-                    $this->setResponse(409, 'Register IP Plugin : Failed to refresh '.$this->config['REGISTERIP-PfSense-IPTable']);
-                    $this->writeLog('error', 'Register IP Plugin : Failed to refresh '.$this->config['REGISTERIP-PfSense-IPTable'].' : '.$result, $this->user['username']);
+                    $this->setResponse(409, 'IP Registration Plugin : Failed to refresh '.$this->config['ipRegistration-PfSense-IPTable']);
+                    $this->writeLog('error', 'IP Registration Plugin : Failed to refresh '.$this->config['ipRegistration-PfSense-IPTable'].' : '.$result, $this->user['username']);
                     return $result;
                 }
 
