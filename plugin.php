@@ -28,6 +28,7 @@ class ipRegistrationPlugin extends Organizr
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
 				$this->settingsOption('passwordalt', 'IPREGISTRATION-PfSense-Password', ['label' => 'The password of your pfsense account']),
+                $this->settingsOption('input', 'IPREGISTRATION-PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.']),
                 $this->settingsOption('token', 'IPREGISTRATION-ApiToken'),
 				$this->settingsOption('blank'),
 				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationPluginGenerateAPIKey();"']),
@@ -80,8 +81,7 @@ class ipRegistrationPlugin extends Organizr
 				'function' => 'query',
 				'query' => 'CREATE TABLE `IPREGISTRATION` (
 					`id`	INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-					`date`	TEXT,
-					`time`	TEXT,
+					`datetime`	TEXT,
 					`type`	TEXT,
 					`ip`	INTEGER,
 					`username`	TEXT
@@ -152,8 +152,7 @@ class ipRegistrationPlugin extends Organizr
 				} else {
 					// Write to DB
 					$IPRegistration = [
-						'date' => date("d.m.y"),
-						'time' => date("H:m:s"),
+						'datetime' => date("j F Y g:ia"),
 						'type' => 'Auto',
 						'ip' => $UserIP,
 						'username' => $this->user['username']
@@ -178,6 +177,7 @@ class ipRegistrationPlugin extends Organizr
 						$Result['Response']['Location'] = "External";
 						$Result['Response']['Message'] = 'IP Address Registered Successfully.';
 						$this->_ipRegistrationPluginUpdateFirewall();
+                        $this->_ipRegistrationPluginCleanupDB();
 						return $Result;
 					} else {
 						$this->setResponse(409, 'IP Registration Plugin : Failed to add IP Address to database: '.$UserIP);
@@ -208,6 +208,18 @@ class ipRegistrationPlugin extends Organizr
             echo $IP['ip'].PHP_EOL;
         }
 	}
+
+	public function _ipRegistrationPluginCleanupDB() {
+        $query = [
+            array(
+                'function' => 'fetchAll',
+                'query' => 'DELETE FROM IPREGISTRATION WHERE id NOT IN (SELECT id FROM IPREGISTRATION ORDER BY id DESC LIMIT '.$this->config['IPREGISTRATION-PfSense-Maximum-IPs'].')'
+            )
+        ];
+        //return $query;
+        return $this->processQueries($query);
+	}
+
 
 	public function _ipRegistrationPluginUpdateFirewall() {
 		require 'vendor/autoload.php';

@@ -9,6 +9,7 @@ return array(
 	'IPREGISTRATION-PfSense-IPTable' => '',
 	'IPREGISTRATION-PfSense-Username' => '',
 	'IPREGISTRATION-PfSense-Password' => '',
+	'IPREGISTRATION-PfSense-Maximum-IPs' => '100',
 	'IPREGISTRATION-ApiToken' => '',
 	'IPREGISTRATION-pluginAuth' => '1'
 );
