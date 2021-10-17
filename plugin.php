@@ -142,8 +142,8 @@ class ipRegistrationPlugin extends Organizr
         {
             $IPData = explode(",",$IPsLine);
             $IPs[] = $IPData[2];
+            echo $IPData[2].PHP_EOL;
         }
-        return $IPs;
     }
 
     public function _ipRegistrationPluginUpdateFirewall() {
