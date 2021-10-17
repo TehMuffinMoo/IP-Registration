@@ -28,6 +28,9 @@ class ipRegistrationPlugin extends Organizr
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
 				$this->settingsOption('passwordalt', 'IPREGISTRATION-PfSense-Password', ['label' => 'The password of your pfsense account']),
+                $this->settingsOption('token', 'IPREGISTRATION-ApiToken'),
+				$this->settingsOption('blank'),
+				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationPluginGenerateAPIKey();"']),
 			),
 		);
 	}
@@ -57,7 +60,7 @@ class ipRegistrationPlugin extends Organizr
 
 	protected function _ipRegistrationPluginCheckDBTablesExist()
 	{
-		$response = [
+		$query = [
 			array(
 				'function' => 'fetchSingle',
 				'query' => array(
@@ -66,13 +69,13 @@ class ipRegistrationPlugin extends Organizr
 				'key' => 'IPREGISTRATION'
 			)
 		];
-		$data = $this->processQueries($response);
-		return ($data["IPREGISTRATION"] != false);
+		$data = $this->processQueries($query);
+        return $data;
 	}
 	
 	protected function _ipRegistrationPluginCreateDBTables()
 	{
-		$response = [
+		$query = [
 			array(
 				'function' => 'query',
 				'query' => 'CREATE TABLE `IPREGISTRATION` (
@@ -85,7 +88,7 @@ class ipRegistrationPlugin extends Organizr
 				);'
 			)
 		];
-		$this->processQueries($response);
+		$this->processQueries($query);
 	}
 
 	protected function 	_ipRegistrationPluginQueryDB($UserIP = "", $Username = "") {

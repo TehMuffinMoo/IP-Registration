@@ -50,7 +50,7 @@ $app->get('/plugins/ipRegistration/update', function ($request, $response, $args
 $app->get('/plugins/ipRegistration/list', function ($request, $response, $args) {
 	$ipRegistrationPlugin = new ipRegistrationPlugin();
 	if ($ipRegistrationPlugin->checkRoute($request)) {
-		if ($ipRegistrationPlugin->qualifyRequest(999, true)) {
+		if ($_GET['ApiKey'] == $ipRegistrationPlugin->config['IPREGISTRATION-ApiToken'] || $ipRegistrationPlugin->qualifyRequest(1, true)) {
 			$GLOBALS['api'] = $ipRegistrationPlugin->_ipRegistrationPluginListIPs();
 		}
 	}
