@@ -8,7 +8,7 @@ $GLOBALS['plugins']['ipRegistration'] = array( // Plugin Name
 	'license' => 'personal', // License Type use , for multiple
 	'idPrefix' => 'IPREGISTRATION', // html element id prefix (All Uppercase)
 	'configPrefix' => 'IPREGISTRATION', // config file prefix for array items without the hypen (All Uppercase)
-	'version' => '1.0.1', // SemVer of plugin
+	'version' => '1.0.2', // SemVer of plugin
 	'image' => 'api/plugins/ipRegistration/logo.png', // 1:1 non transparent image for plugin
 	'settings' => true, // does plugin need a settings modal?
 	'bind' => true, // use default bind to make settings page - true or false
@@ -91,7 +91,7 @@ class ipRegistrationPlugin extends Organizr
 		$this->processQueries($query);
 	}
 
-	protected function 	_ipRegistrationPluginQueryDB($UserIP = "", $Username = "") {
+	protected function _ipRegistrationPluginQueryDB($UserIP = "", $Username = "") {
         if ($UserIP != "") {
             $query = [
                 array(
@@ -143,7 +143,7 @@ class ipRegistrationPlugin extends Organizr
 		if (filter_var($UserIP, FILTER_VALIDATE_IP)) {
 			if (filter_var($UserIP, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
 
-                $DBResult = $this->	_ipRegistrationPluginQueryDB($UserIP, "");
+                $DBResult = $this->_ipRegistrationPluginQueryDB($UserIP, "");
                 if ($DBResult) {
 					$Result['Response']['Status'] = "Exists";
 					$Result['Response']['Location'] = "External";
