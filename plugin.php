@@ -12,7 +12,7 @@ $GLOBALS['plugins']['ipRegistration'] = array( // Plugin Name
 	'image' => 'api/plugins/ipRegistration/logo.png', // 1:1 non transparent image for plugin
 	'settings' => true, // does plugin need a settings modal?
 	'bind' => true, // use default bind to make settings page - true or false
-	'api' => 'api/v2/plugins/ipRegistration/settings', // api route for settings page (All Lowercase)
+	'api' => 'api/v2/plugins/ipregistration/settings', // api route for settings page (All Lowercase)
 	'homepage' => false // Is plugin for use on homepage? true or false
 );
 
@@ -23,7 +23,7 @@ class ipRegistrationPlugin extends Organizr
 	{
 		return array(
 			'Plugin Settings' => array(
-				$this->settingsOption('auth', 'IPREGISTRATION-pluginAuth'),
+				$this->settingsOption('auth', 'IPREGISTRATION-pluginAuth', ['label' => 'Which users you would like to be able to register and view their own IPs']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
@@ -186,7 +186,7 @@ class ipRegistrationPlugin extends Organizr
 						$Result['Response']['Location'] = "External";
 						$Result['Response']['Message'] = 'Failed to add IP Address to database.';
 						$this->setResponse(409, 'IP Registration Plugin: Failed to add IP Address to database: '.$UserIP);
-						$this->logger->error('Failed to add IP Address to database',$Result);
+						$this->logger->warning('Failed to add IP Address to database',$Result);
 						return $Result;
                     }
 				}
@@ -211,6 +211,16 @@ class ipRegistrationPlugin extends Organizr
         }
 	}
 
+	public function _ipRegistrationPluginQueryIPs() {
+		if ($this->qualifyRequest(1, false)) {
+			$IPs = $this->_ipRegistrationPluginQueryDB("","");
+			return array_reverse($IPs);
+		} else {
+			$IPs[] = $this->_ipRegistrationPluginQueryDB("",$this->user['username']);
+			return array_reverse($IPs);
+		}
+	}
+
 	public function _ipRegistrationPluginCleanupDB() {
         $query = [
             array(
@@ -227,7 +237,7 @@ class ipRegistrationPlugin extends Organizr
 		require 'vendor/autoload.php';
 		$ssh = new phpseclib\Net\SSH2($this->config['IPREGISTRATION-PfSense-IP']);
 		if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
-			$this->logger->error('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username']);
+			$this->logger->warning('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username']);
 			$this->setResponse(409, "IP Registration Plugin: SSH Login Failed.");
 			return $false;
 		} else {
@@ -237,7 +247,7 @@ class ipRegistrationPlugin extends Organizr
 				$this->setResponse(200, 'IP Registration Plugin: pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.');
 				return $true;
 			} else {
-				$this->logger->error('Failed to refresh pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'],$result);
+				$this->logger->warning('Failed to refresh pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'],$result);
 				$this->setResponse(409, 'IP Registration Plugin: Failed to refresh IP table '.$this->config['IPREGISTRATION-PfSense-IPTable']);
 				return $result;
 			}
