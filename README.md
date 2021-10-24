@@ -23,6 +23,7 @@ An administrator can view all registered IP addresses via the same top-right men
 Paste the code at the bottom of this README into a Custom HTML homepage item, ensuring to provide the same minimum authentication as you have specified in the plugin. There are also two parameters to change in the script at the bottom, one for an IP or FQDN and one for a TCP port to be checked. I use this for checking connectivity to Plex to know the IP has been successfully registered and updated in the firewall. An example can be seen in the clip below;
 
 <img src="https://user-images.githubusercontent.com/51195492/138614316-cdf7c842-9f67-4b6b-a93e-fb6ec097a6bc.gif" width="40%" height="40%"/>
+
 ### Configuring PfSense
 There are only a couple of steps required in PfSense.
 
