@@ -8,7 +8,7 @@ $GLOBALS['plugins']['ipRegistration'] = array( // Plugin Name
 	'license' => 'personal', // License Type use , for multiple
 	'idPrefix' => 'IPREGISTRATION', // html element id prefix (All Uppercase)
 	'configPrefix' => 'IPREGISTRATION', // config file prefix for array items without the hypen (All Uppercase)
-	'version' => '1.0.2', // SemVer of plugin
+	'version' => '1.0.1', // SemVer of plugin
 	'image' => 'api/plugins/ipRegistration/logo.png', // 1:1 non transparent image for plugin
 	'settings' => true, // does plugin need a settings modal?
 	'bind' => true, // use default bind to make settings page - true or false
@@ -171,7 +171,7 @@ class ipRegistrationPlugin extends Organizr
 					$this->processQueries($query);
 
 					// Check it was added to Database OK
-					$IPs = $this->	_ipRegistrationPluginQueryDB($UserIP, "");
+					$IPs = $this->_ipRegistrationPluginQueryDB($UserIP, "");
 					if ($IPs) {
 						$Result['Response']['Status'] = "Added";
 						$Result['Response']['Location'] = "External";
@@ -251,6 +251,46 @@ class ipRegistrationPlugin extends Organizr
 				$this->setResponse(409, 'IP Registration Plugin: Failed to refresh IP table '.$this->config['IPREGISTRATION-PfSense-IPTable']);
 				return $result;
 			}
+		}
+	}
+
+	public function _ipRegistrationPluginDeleteIP($id) {
+		$this->setLoggerChannel('IP Registration Plugin');
+		if ($id) {
+			if ($this->qualifyRequest(1, false)) {
+				$IPs = $this->_ipRegistrationPluginQueryDB("","");
+			} else {
+				$IPs[] = $this->_ipRegistrationPluginQueryDB("",$this->user['username']);
+			}
+			if ($IPs) {
+				if (in_array($id,array_column( $IPs,"id"))) {
+					$query = [
+						array(
+							'function' => 'query',
+							'query' => 'DELETE FROM IPREGISTRATION WHERE id IS '.$id
+						)
+					];
+					$sqlquery = $this->processQueries($query);
+					if ($sqlquery) {
+						$this->logger->debug('Deleted IP Address Successfully',$query);
+						$this->setResponse(200, 'IP Registration Plugin: IP Address Deleted Successfully.');
+						return $true;
+					} else {
+						$this->logger->warning('Failed to delete IP Address with ID: '.$id,$query);
+						$this->setResponse(409, 'IP Registration Plugin: ERROR: Failed to delete IP Address with ID: '.$id);
+						return $false;
+					}
+				} else {
+					$this->setResponse(409, 'IP Registration Plugin: ERROR: Failed to find IP Address with ID: '.$id);
+					return $false;
+				}
+			} else {
+				$this->setResponse(409, 'IP Registration Plugin: ERROR: No IP Addresses returned');
+				return $false;
+			}
+		} else {
+			$this->setResponse(409, 'IP Registration Plugin: ERROR: No ID was specified');
+			return $false;
 		}
 	}
 }

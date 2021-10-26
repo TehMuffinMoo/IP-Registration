@@ -71,3 +71,17 @@ $app->get('/plugins/ipregistration/list', function ($request, $response, $args) 
 		->withHeader('Content-Type', 'application/json;charset=UTF-8')
 		->withStatus($GLOBALS['responseCode']);
 });
+$app->delete('/plugins/ipregistration/ip/{id}', function ($request, $response, $args) {
+	$Organizr = ($request->getAttribute('Organizr')) ?? new Organizr();
+	if ($Organizr->checkRoute($request)) {
+		$ipRegistrationPlugin = new ipRegistrationPlugin;
+		if ($ipRegistrationPlugin->qualifyRequest($ipRegistrationPlugin->config['IPREGISTRATION-pluginAuth'], true)) {
+			$id = $args['id'] ?? null;
+			$GLOBALS['api']['response']['data'] = $ipRegistrationPlugin->_ipRegistrationPluginDeleteIP($id);
+		}
+	}
+	$response->getBody()->write(jsonE($GLOBALS['api']));
+	return $response
+		->withHeader('Content-Type', 'application/json;charset=UTF-8')
+		->withStatus($GLOBALS['responseCode']);
+});

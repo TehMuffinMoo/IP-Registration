@@ -38,13 +38,14 @@ function toggleIPRegistrationPlugin(){
 						</div>
 					</div>
 					<div class="table-responsive queryIPTableList hidden" id="queryIPTableList">
-						<table class="table color-bordered-table purple-bordered-table text-left">
+						<table class="table color-bordered-table danger-bordered-table text-left">
 							<thead>
 								<tr>
 									<th>Date/Time</th>
 									<th>Type</th>
 									<th>IP Address</th>
 									<th>Username</th>
+									<th>DELETE</th>
 								</tr>
 							</thead>
 							<tbody id="queryIP"></tbody>
@@ -54,7 +55,7 @@ function toggleIPRegistrationPlugin(){
 			</div>
 		</div>
 	</div>
-		`;
+	`;
 	swal({
 		content: createElementFromHTML(div),
 		button: false,
@@ -74,11 +75,12 @@ function ipRegistrationPluginLoadIPs(){
 				}
 				$.each(data.response.data, function(_, ip) {
 					let ipItem = `
-					<tr class="ipUsers ${ip.username}">
+					<tr class="ipUsers ${ip.username} ipItem-${ip.id}">
 						<td>${ip.datetime}</td>
 						<td>${ip.type}</td>
 						<td>${ip.ip}</td>
 						<td>${ip.username}</td>
+						<td class="deleteButton"><button type="button" class="btn btn-danger btn-outline btn-circle btn-lg m-r-5" onclick="deleteIP('${ip.id}');"><i class="ti-trash"></i></button></td>
 					</tr>
 				`;
 					thtml.append(ipItem);
@@ -93,4 +95,20 @@ function ipRegistrationPluginLoadIPs(){
 		$('.loadingQueryIP').remove();
 		OrganizrApiError(xhr);
 	});
+}
+
+function deleteIP(id){
+	ajaxloader(".content-wrap","in");
+	organizrAPI2('DELETE','api/v2/plugins/ipregistration/ip/' + id).success(function(data) {
+		var response = data.response;
+		$('.ipItem-'+id).remove();
+		//$.magnificPopup.close();
+		ajaxloader();
+		message('IP Registration Plugin',' IP Address Deleted Successfully',activeInfo.settings.notifications.position,'#FFF','success','5000');
+	}).fail(function(xhr) {
+		console.error("Organizr Function: API Connection Failed");
+		ajaxloader();
+		message('IP Registration Plugin','Failed to delete IP Address',activeInfo.settings.notifications.position,'#FFF','error','5000');
+	});
+
 }
