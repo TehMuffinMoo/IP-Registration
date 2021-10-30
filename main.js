@@ -38,6 +38,9 @@ function toggleIPRegistrationPlugin(){
 						</div>
 					</div>
 					<div class="table-responsive queryIPTableList hidden" id="queryIPTableList">
+						<label>Search:&nbsp;				
+							<input type="text" id="ipSearch" placeholder="" />
+						</label>
 						<table class="table color-bordered-table danger-bordered-table text-left">
 							<thead>
 								<tr>
@@ -86,8 +89,7 @@ function ipRegistrationPluginLoadIPs(){
 					thtml.append(ipItem);
 				});
 			}
-			thtml.append('<script>ipRegistrationPluginOnToggle();</script>');
-			thtml.append('<script>ipRegistrationPluginOnSelect();</script>');
+			thtml.append('<script>ipRegistrationPluginOnSearch();</script>');
 		}catch(e) {
 			organizrCatchError(e,data);
 		}
@@ -111,4 +113,16 @@ function deleteIP(id){
 		message('IP Registration Plugin','Failed to delete IP Address',activeInfo.settings.notifications.position,'#FFF','error','5000');
 	});
 
+}
+
+function ipRegistrationPluginOnSearch() {
+	$("#ipSearch").keyup(function(){
+		var searchText = $(this).val().toLowerCase();
+		$.each($("#queryIPTableList table tbody tr"), function() {
+			if($(this).text().toLowerCase().indexOf(searchText) === -1)
+				$(this).hide();
+			else
+			$(this).show();                
+		});
+	});
 }
