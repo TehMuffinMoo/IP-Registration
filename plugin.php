@@ -242,25 +242,25 @@ class ipRegistrationPlugin extends Organizr
 				if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
 					$this->logger->warning('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username'].' on '.$PfSenseHost);
 					$this->setResponse(409, 'IP Registration Plugin: SSH Login Failed');
-					$ssherror = $true;
+					$ssherror = true;
 				} else {
 					$result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['IPREGISTRATION-PfSense-IPTable']);
 					if (!$result) {
 						$this->logger->debug('pfsense IP table refreshed successfully on '.$PfSenseHost,$this->config['IPREGISTRATION-PfSense-IPTable'].' on '.$PfSenseHost);
 						$this->setResponse(200, 'IP Registration Plugin: pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.');
-						$ssherror = $false;
+						$ssherror = false;
 					} else {
 						$this->logger->warning('Failed to refresh pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' on '.$PfSenseHost,$result);
 						$this->setResponse(409, 'IP Registration Plugin: Failed to refresh IP table '.$this->config['IPREGISTRATION-PfSense-IPTable']);
-						$ssherror = $false;
+						$ssherror = false;
 					}
 				}
 				$ssh->disconnect();
 			}
 			if (!$ssherror) {
-				return $true;
+				return true;
 			} else {
-				return $false;
+				return false;
 			}
 		} else {
 			$this->logger->warning('PfSense IP Addresses empty: '.$this->config['IPREGISTRATION-PfSense-IP']);
@@ -287,23 +287,23 @@ class ipRegistrationPlugin extends Organizr
 					if ($sqlquery) {
 						$this->logger->debug('Deleted IP Address Successfully',$query);
 						$this->setResponse(200, 'IP Registration Plugin: IP Address Deleted Successfully.');
-						return $true;
+						return true;
 					} else {
 						$this->logger->warning('Failed to delete IP Address with ID: '.$id,$query);
 						$this->setResponse(409, 'IP Registration Plugin: ERROR: Failed to delete IP Address with ID: '.$id);
-						return $false;
+						return false;
 					}
 				} else {
 					$this->setResponse(409, 'IP Registration Plugin: ERROR: Failed to find IP Address with ID: '.$id);
-					return $false;
+					return false;
 				}
 			} else {
 				$this->setResponse(409, 'IP Registration Plugin: ERROR: No IP Addresses returned');
-				return $false;
+				return false;
 			}
 		} else {
 			$this->setResponse(409, 'IP Registration Plugin: ERROR: No ID was specified');
-			return $false;
+			return false;
 		}
 	}
 }
