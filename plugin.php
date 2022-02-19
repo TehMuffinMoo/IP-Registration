@@ -24,7 +24,7 @@ class ipRegistrationPlugin extends Organizr
 		return array(
 			'Plugin Settings' => array(
 				$this->settingsOption('auth', 'IPREGISTRATION-pluginAuth', ['label' => 'Which users you would like to be able to register and view their own IPs']),
-				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
+				$this->settingsOption('multiple-url', 'IPREGISTRATION-PfSense-IP', ['label' => 'The IP / FQDN of your pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
 				$this->settingsOption('passwordalt', 'IPREGISTRATION-PfSense-Password', ['label' => 'The password of your pfsense account']),
@@ -233,24 +233,37 @@ class ipRegistrationPlugin extends Organizr
 
 
 	public function _ipRegistrationPluginUpdateFirewall() {
-		$this->setLoggerChannel('IP Registration Plugin');
-		require 'vendor/autoload.php';
-		$ssh = new phpseclib\Net\SSH2($this->config['IPREGISTRATION-PfSense-IP']);
-		if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
-			$this->logger->warning('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username']);
-			$this->setResponse(409, "IP Registration Plugin: SSH Login Failed.");
-			return $false;
-		} else {
-			$result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['IPREGISTRATION-PfSense-IPTable']);
-			if (!$result) {
-				$this->logger->debug('pfsense IP table refreshed successfully.',$this->config['IPREGISTRATION-PfSense-IPTable']);
-				$this->setResponse(200, 'IP Registration Plugin: pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.');
+		$PfSenseHosts = explode(',',$this->config['IPREGISTRATION-PfSense-IP']);
+		if (!empty($PfSenseHosts)) {
+			$this->setLoggerChannel('IP Registration Plugin');
+			require 'vendor/autoload.php';
+			foreach($PfSenseHosts as &$PfSenseHost){
+				$ssh = new phpseclib\Net\SSH2($PfSenseHost);
+				if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
+					$this->logger->warning('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username'].' on '.$PfSenseHost);
+					$this->setResponse(409, 'IP Registration Plugin: SSH Login Failed');
+					$ssherror = $true;
+				} else {
+					$result = $ssh->exec('sudo /etc/rc.update_urltables now forceupdate '.$this->config['IPREGISTRATION-PfSense-IPTable']);
+					if (!$result) {
+						$this->logger->debug('pfsense IP table refreshed successfully on '.$PfSenseHost,$this->config['IPREGISTRATION-PfSense-IPTable'].' on '.$PfSenseHost);
+						$this->setResponse(200, 'IP Registration Plugin: pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' refreshed successfully.');
+						$ssherror = $false;
+					} else {
+						$this->logger->warning('Failed to refresh pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'].' on '.$PfSenseHost,$result);
+						$this->setResponse(409, 'IP Registration Plugin: Failed to refresh IP table '.$this->config['IPREGISTRATION-PfSense-IPTable']);
+						$ssherror = $false;
+					}
+				}
+				$ssh->disconnect();
+			}
+			if (!$ssherror) {
 				return $true;
 			} else {
-				$this->logger->warning('Failed to refresh pfsense IP table '.$this->config['IPREGISTRATION-PfSense-IPTable'],$result);
-				$this->setResponse(409, 'IP Registration Plugin: Failed to refresh IP table '.$this->config['IPREGISTRATION-PfSense-IPTable']);
-				return $result;
+				return $false;
 			}
+		} else {
+			$this->logger->warning('PfSense IP Addresses empty: '.$this->config['IPREGISTRATION-PfSense-IP']);
 		}
 	}
 
