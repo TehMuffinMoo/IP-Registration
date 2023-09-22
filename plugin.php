@@ -240,7 +240,7 @@ class ipRegistrationPlugin extends Organizr
 			foreach($PfSenseHosts as &$PfSenseHost){
 				$ssh = new phpseclib\Net\SSH2($PfSenseHost);
 				if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
-					$this->logger->warning('SSH Login Failed for'.$this->config['IPREGISTRATION-PfSense-Username'].' on '.$PfSenseHost);
+					$this->logger->warning('SSH Login Failed for '.$this->config['IPREGISTRATION-PfSense-Username'].' on '.$PfSenseHost);
 					$this->setResponse(409, 'IP Registration Plugin: SSH Login Failed');
 					$ssherror = true;
 				} else {
