@@ -8,7 +8,7 @@ $GLOBALS['plugins']['ipRegistration'] = array( // Plugin Name
 	'license' => 'personal', // License Type use , for multiple
 	'idPrefix' => 'IPREGISTRATION', // html element id prefix (All Uppercase)
 	'configPrefix' => 'IPREGISTRATION', // config file prefix for array items without the hypen (All Uppercase)
-	'version' => '1.0.5', // SemVer of plugin
+	'version' => '1.0.6', // SemVer of plugin
 	'image' => 'api/plugins/ipRegistration/logo.png', // 1:1 non transparent image for plugin
 	'settings' => true, // does plugin need a settings modal?
 	'bind' => true, // use default bind to make settings page - true or false
@@ -28,8 +28,8 @@ class ipRegistrationPlugin extends Organizr
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-IPTable', ['label' => 'The name of the IP Alias in pfsense']),
 				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Username', ['label' => 'The username of your pfsense account']),
 				$this->settingsOption('passwordalt', 'IPREGISTRATION-PfSense-Password', ['label' => 'The password of your pfsense account']),
-                $this->settingsOption('input', 'IPREGISTRATION-PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.']),
-                $this->settingsOption('token', 'IPREGISTRATION-ApiToken'),
+				$this->settingsOption('input', 'IPREGISTRATION-PfSense-Maximum-IPs', ['label' => 'The maximum number of IP Addresses to retain in the database.']),
+				$this->settingsOption('token', 'IPREGISTRATION-ApiToken'),
 				$this->settingsOption('blank'),
 				$this->settingsOption('button', '', ['label' => 'Generate API Token', 'icon' => 'fa fa-undo', 'text' => 'Retrieve', 'attr' => 'onclick="ipRegistrationPluginGenerateAPIKey();"']),
 			),
@@ -143,8 +143,8 @@ class ipRegistrationPlugin extends Organizr
 		if (filter_var($UserIP, FILTER_VALIDATE_IP)) {
 			if (filter_var($UserIP, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
 
-                $DBResult = $this->_ipRegistrationPluginQueryDB($UserIP, "");
-                if ($DBResult) {
+		                $DBResult = $this->_ipRegistrationPluginQueryDB($UserIP, "");
+		                if ($DBResult) {
 					$Result['Response']['Status'] = "Exists";
 					$Result['Response']['Location'] = "External";
 					$Result['Response']['Message'] = 'IP is already registered.';
@@ -179,7 +179,7 @@ class ipRegistrationPlugin extends Organizr
 						$this->setResponse(200, 'IP Registration Plugin: Added IP Address to the database successfully: '.$UserIP);
 						$this->logger->info('Added IP Address to the database successfully',$Result);
 						$this->_ipRegistrationPluginUpdateFirewall();
-                        $this->_ipRegistrationPluginCleanupDB();
+						$this->_ipRegistrationPluginCleanupDB();
 						return $Result;
 					} else {
 						$Result['Response']['Status'] = "Error";
@@ -206,9 +206,9 @@ class ipRegistrationPlugin extends Organizr
 
 	public function _ipRegistrationPluginListIPs() {
 		$IPs = $this->_ipRegistrationPluginQueryDB("","");
-        foreach ($IPs as $IP) {
-            echo $IP['ip'].PHP_EOL;
-        }
+	        foreach ($IPs as $IP) {
+	            echo $IP['ip'].PHP_EOL;
+	        }
 	}
 
 	public function _ipRegistrationPluginQueryIPs() {
@@ -238,7 +238,7 @@ class ipRegistrationPlugin extends Organizr
 			$this->setLoggerChannel('IP Registration Plugin');
 			require 'vendor/autoload.php';
 			foreach($PfSenseHosts as &$PfSenseHost){
-				$ssh = new phpseclib\Net\SSH2($PfSenseHost);
+				$ssh = new phpseclib3\Net\SSH2($PfSenseHost);
 				if (!$ssh->login($this->config['IPREGISTRATION-PfSense-Username'], $this->decrypt($this->config['IPREGISTRATION-PfSense-Password']))) {
 					$this->logger->warning('SSH Login Failed for '.$this->config['IPREGISTRATION-PfSense-Username'].' on '.$PfSenseHost);
 					$this->setResponse(409, 'IP Registration Plugin: SSH Login Failed');
